@@ -21,6 +21,10 @@
 
 #define BUF_SIZE 256
 
+#define FLAG 0x7E
+#define A 0x03
+#define C 0x03
+
 volatile int STOP = FALSE;
 
 int main(int argc, char *argv[])
@@ -90,36 +94,24 @@ int main(int argc, char *argv[])
     printf("New termios structure set\n");
 
     // Create string to send
-    unsigned char buf[BUF_SIZE] = {0};
-    gets(buf); // read from stdin
-
+    unsigned char buf[5] = {0};
+    buf[0] = FLAG;
+    buf[1] = A;
+    buf[2] = C;
+    buf[3] = A^C;
+    buf[4] = FLAG;
+	
     // In non-canonical mode, '\n' does not end the writing.
     // Test this condition by placing a '\n' in the middle of the buffer.
     // The whole buffer must be sent even with the '\n'.
-    // buf[5] = '\n';
-    buf[BUF_SIZE-1] = '\n';
+    //buf[5] = '\n';
 
-    int bytes = write(fd, buf, strlen(buf)+1);
+    int bytes = write(fd, buf, 5);
+    printf("%d bytes written\n", bytes);
 
     // Wait until all bytes have been written to the serial port
     sleep(1);
-
-    // Recebe
-    printf("Mensagem recebida:\n");
-    while (STOP == FALSE) {
-        int bytes = read(fd, buf, BUF_SIZE);
-
-           if(bytes>0){
-            buf[bytes] = '\0';
-
-        printf("%s:%d\n", buf,bytes);   
-        if(buf[strlen(buf)] == '\0') 
-            STOP = TRUE; 
-        }
-           
-    }
-    printf("\n");
-
+	
     // Restore the old port settings
     if (tcsetattr(fd, TCSANOW, &oldtio) == -1)
     {
