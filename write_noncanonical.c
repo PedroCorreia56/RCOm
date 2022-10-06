@@ -94,19 +94,19 @@ int main(int argc, char *argv[])
     printf("New termios structure set\n");
 
     // Create string to send
-    unsigned char buf[5] = {0};
+    unsigned char buf[5];
     buf[0] = FLAG;
     buf[1] = A;
     buf[2] = C;
     buf[3] = A^C;
     buf[4] = FLAG;
-	
+	printf("buf=%s\n",buf);
     // In non-canonical mode, '\n' does not end the writing.
     // Test this condition by placing a '\n' in the middle of the buffer.
     // The whole buffer must be sent even with the '\n'.
     //buf[5] = '\n';
 
-    int bytes = write(fd, buf, 5);
+    int bytes = write(fd, buf, 6);
     printf("%d bytes written\n", bytes);
 
     // Wait until all bytes have been written to the serial port

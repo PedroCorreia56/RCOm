@@ -95,7 +95,8 @@ int main(int argc, char *argv[])
 
     // Loop for input
     //unsigned char buf[BUF_SIZE + 1] = {0}; // +1: Save space for the final '\0' char
-    unsigned char *buf;
+    unsigned char buf[6];
+   
     char c;
     int pos=0;
     int bytes=0;
@@ -104,6 +105,7 @@ int main(int argc, char *argv[])
     int a_pos = 0;
     int c_pos = 0;
     int bcc_pos = 0;
+    printf("Antes do while\n");
     while (STOP == FALSE)
     {
         // Returns after 5 chars have been input
@@ -111,14 +113,18 @@ int main(int argc, char *argv[])
 
         printf("bytes= %d\n", bytes);
         if(bytes>0){
-    
+            printf("c=%x\n",c);
+            printf("pos=%d\n",pos);
             buf[pos]=c;
+            printf("buf[pos]=%x\n",buf[pos]);
             pos++;
+          
             switch (state)
             {
             case 0://
            
                 if(c==FLAG){
+                    
                     state=1;
                     i++;
                     printf("entrei no estado 1\n");
@@ -128,26 +134,25 @@ int main(int argc, char *argv[])
                 if(c!=FLAG){
                     state=2;
                     i++;
-                    a_pos=pos;
+                    a_pos=pos-1;
                     printf("entrei no estado 2\n");
                 }
                 break;
             case 2:
-                
                 if(i==3){ 
-                    bcc_pos=pos;
+                    bcc_pos=pos-1;
                     printf("li o bcc\n");
                     i++;
                 }
-                
                 if(i==2){ 
-                    c_pos=pos;
+                    c_pos=pos-1;
                     printf("li o c\n");
+                     printf("buf[c_pos]=%x\n",buf[c_pos]);
                     i++;
                 }
-
                 if(c==FLAG){
-                    
+                    printf("Entrou no ultimo if\n");
+                    printf("i=%d\nbuf[a_pos]=%x\nbuf[c_pos]=%x\n",i,buf[a_pos],buf[c_pos]);
                     if(i==4 && buf[c_pos]==C && buf[bcc_pos]==(buf[a_pos]^buf[c_pos])){
                      state=3;
                      printf("entrei no estado 3\n");
@@ -161,7 +166,18 @@ int main(int argc, char *argv[])
                 break;
             
             case 3:
-            
+            printf("Tou no estado 3\n");
+                if(c=='\0'){
+            printf("Entrei no stop\n");
+            printf("c=%x\n",c);
+            STOP=TRUE;
+                }
+                if(c==FLAG){
+                    i=0;
+                    state=1;
+                    i++;
+                    printf("entrei no estado 1\n");
+                }
             break;
                
             
@@ -169,13 +185,9 @@ int main(int argc, char *argv[])
                 break;
             }
 
-        if(c=='\0')
-            STOP=TRUE;
-
-
         }
        // buf[bytes] = '\0'; // Set end of string to '\0', so we can printf
-
+        
     }
 
     // The while() cycle should be changed in order to respect the specifications
