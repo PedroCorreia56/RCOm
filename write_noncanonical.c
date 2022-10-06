@@ -1,7 +1,3 @@
-// Write to serial port in non-canonical mode
-//
-// Modified by: Eduardo Nuno Almeida [enalmeida@fe.up.pt]
-
 #include <fcntl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -94,13 +90,14 @@ int main(int argc, char *argv[])
     printf("New termios structure set\n");
 
     // Create string to send
-    unsigned char buf[5];
+    unsigned char buf[6];
     buf[0] = FLAG;
     buf[1] = A;
     buf[2] = C;
     buf[3] = A^C;
     buf[4] = FLAG;
-    
+    buf[5] = '\0';
+
 	printf("buf=%s\n",buf);
     // In non-canonical mode, '\n' does not end the writing.
     // Test this condition by placing a '\n' in the middle of the buffer.
@@ -108,12 +105,13 @@ int main(int argc, char *argv[])
     //buf[5] = '\n';
 
     int bytes = write(fd, buf, 6);
+    for(int i=0;i<6;i++) printf("%x\n", buf[i]);
     printf("%d bytes written\n", bytes);
 
     // Wait until all bytes have been written to the serial port
     sleep(1);
 	
-/*
+
     unsigned char received[6];
     char c;
     int pos=0;
@@ -123,12 +121,10 @@ int main(int argc, char *argv[])
     int a_pos = 0;
     int c_pos = 0;
     int bcc_pos = 0;
-
     while (STOP == FALSE)
     {
         // Returns after 5 chars have been input
         bytes=read(fd, &c, 1);
-
         printf("bytes= %d\n", bytes);
         if(bytes>0){
             printf("c=%x\n",c);
@@ -171,7 +167,7 @@ int main(int argc, char *argv[])
                 if(c==FLAG){
                     printf("Entrou no ultimo if\n");
                     printf("i=%d\nbuf[a_pos]=%x\nbuf[c_pos]=%x\n",i,received[a_pos],received[c_pos]);
-                    if(i==4 && received[c_pos]==0X07 && received[bcc_pos]==(received[a_pos]^received[c_pos])){
+                    if(i==4 && received[c_pos]==C && received[bcc_pos]==(received[a_pos]^received[c_pos])){
                      state=3;
                      printf("entrei no estado 3\n");
                     }
@@ -180,12 +176,11 @@ int main(int argc, char *argv[])
                         state=0;
                     }
                 }
-
                 break;
             
             case 3:
             printf("Tou no estado 3\n");
-                if(c=='\0'){
+            if(c=='\0'){
             printf("Entrei no stop\n");
             printf("c=%x\n",c);
             STOP=TRUE;
@@ -202,12 +197,11 @@ int main(int argc, char *argv[])
             default:
                 break;
             }
-
         }
        // buf[bytes] = '\0'; // Set end of string to '\0', so we can printf
         
     }
-    */
+    
     // Restore the old port settings
     if (tcsetattr(fd, TCSANOW, &oldtio) == -1)
     {
