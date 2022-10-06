@@ -108,10 +108,11 @@ int main(int argc, char *argv[])
     printf("Antes do while\n");
     while (STOP == FALSE)
     {
-        // Returns after 5 chars have been input
+        // Returns after 5 chars have been input~
+        printf("bytes= %d\n", bytes);
         bytes=read(fd, &c, 1);
 
-        printf("bytes= %d\n", bytes);
+       // printf("bytes= %d\n", bytes);
         if(bytes>0){
             printf("c=%x\n",c);
             printf("pos=%d\n",pos);
@@ -147,7 +148,7 @@ int main(int argc, char *argv[])
                 if(i==2){ 
                     c_pos=pos-1;
                     printf("li o c\n");
-                     printf("buf[c_pos]=%x\n",buf[c_pos]);
+                    printf("buf[c_pos]=%x\n",buf[c_pos]);
                     i++;
                 }
                 if(c==FLAG){
@@ -166,11 +167,11 @@ int main(int argc, char *argv[])
                 break;
             
             case 3:
-            printf("Tou no estado 3\n");
+                printf("Tou no estado 3\n");
                 if(c=='\0'){
-            printf("Entrei no stop\n");
-            printf("c=%x\n",c);
-            STOP=TRUE;
+                    printf("Entrei no stop\n");
+                    printf("c=%x\n",c);
+                    STOP=TRUE;
                 }
                 if(c==FLAG){
                     i=0;
@@ -189,10 +190,19 @@ int main(int argc, char *argv[])
        // buf[bytes] = '\0'; // Set end of string to '\0', so we can printf
         
     }
-
+    printf("bif=");
+    for(int j=0;j<6;j++){
+        printf("%x",buf[j]);
+    }
+    printf("\n"); 
     // The while() cycle should be changed in order to respect the specifications
     // of the protocol indicated in the Lab guide
+    bytes = write(fd, buf, strlen(buf)+1);
+    
+    printf("%d bytes written\n", bytes);
 
+    
+   // sleep(1);
     // Restore the old port settings
     if (tcsetattr(fd, TCSANOW, &oldtio) == -1)
     {
