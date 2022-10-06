@@ -1,6 +1,3 @@
-// Read from serial port in non-canonical mode
-//
-// Modified by: Eduardo Nuno Almeida [enalmeida@fe.up.pt]
 
 #include <fcntl.h>
 #include <stdio.h>
@@ -153,7 +150,7 @@ int main(int argc, char *argv[])
                 }
                 if(c==FLAG){
                     printf("Entrou no ultimo if\n");
-                    printf("i=%d\nbuf[a_pos]=%x\nbuf[c_pos]=%x\n",i,buf[a_pos],buf[c_pos]);
+                    printf("i=%d\nbuf[a_pos]=%x\nbuf[c_pos]=%x\n^=%x\n",i,buf[a_pos],buf[c_pos],buf[a_pos]^buf[c_pos]);
                     if(i==4 && buf[c_pos]==C && buf[bcc_pos]==(buf[a_pos]^buf[c_pos])){
                      state=3;
                      printf("entrei no estado 3\n");
@@ -168,7 +165,7 @@ int main(int argc, char *argv[])
             
             case 3:
                 printf("Tou no estado 3\n");
-                if(c=='\0'){
+                if(c==0){
                     printf("Entrei no stop\n");
                     printf("c=%x\n",c);
                     STOP=TRUE;
@@ -197,7 +194,8 @@ int main(int argc, char *argv[])
     printf("\n"); 
     // The while() cycle should be changed in order to respect the specifications
     // of the protocol indicated in the Lab guide
-    bytes = write(fd, buf, strlen(buf)+1);
+    buf[5]='\0';
+    bytes = write(fd, buf,6);
     
     printf("%d bytes written\n", bytes);
 
