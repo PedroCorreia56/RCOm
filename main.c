@@ -78,7 +78,8 @@ int main(int argc, char** argv)
                 printf("Received start\n");
               
             int size = 0;
-            msg = llread(fd, &size);
+           
+           // msg = llread(fd, &size);
             printf("receiver reading last control packet\n");
           msg_end = llread(fd, &control_size);
             
@@ -104,10 +105,15 @@ int main(int argc, char** argv)
             exit(1);
         }
         printf(" length in main is %d\n", length);
+       // printf("Numero de packets: %d\n",length/WRITE_SIZE);
         //CONTROL packet
         control[0] = 2; // C_BEGIN
         control[1] = 0; // T_FILESIZE
-        control[2] = 1;
+         control[2] = 1;
+       // int packet_number=length/WRITE_SIZE;
+       // if(length%WRITE_SIZE!=0)
+         //   packet_number++;
+       // control[2] = packet_number;
         control[3] = length;
         int tempLength = length;
         int l1 = (length / 255) + 1;
@@ -119,13 +125,14 @@ int main(int argc, char** argv)
     }
         printf("starting transmission of CONTROL packet\n");
         //printf("fd = %d\n", fd);    
-        if(llwrite(fd, control, i + 4)){    //escreve control packet  
+        if(llwrite(fd, control, i + 4)>0){    //escreve control packet  
             printf("starting transmission of I packet\n");
-            if(llwrite(fd, buffer, length)){
-                control[0] = 3;
-                printf("starting transmission of last CONTROL packet\n");
-                llwrite(fd, control, 4);
-            }
+            //if(llwrite(fd, buffer, length)){
+                
+           // } 
+            control[0] = 3;
+            printf("starting transmission of last CONTROL packet\n");
+            llwrite(fd, control, 4);
         }
 
         llclose(fd, TRANSMITTER);

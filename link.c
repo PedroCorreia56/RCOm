@@ -1,8 +1,8 @@
 #include "link.h"
-
-unsigned int sequenceNumber = 0;   /*Número de sequência da trama: 0, 1*/
-unsigned int timeout = 3;          /*Valor do temporizador: 1 s*/
-unsigned int numTransmissions = 4; /*Número de tentativas em caso de falha*/
+/**
+unsigned int sequenceNumber = 0;   /*Número de sequência da trama: 0, 1
+unsigned int timeout = 3;          /*Valor do temporizador: 1 s
+unsigned int numTransmissions = 4; /*Número de tentativas em caso de falha
 
 
 int alarmFlag = FALSE;
@@ -22,13 +22,13 @@ void change_sequenceNumber(){
         sequenceNumber = 0;
     else sequenceNumber = 1;
 }
-
+*/
 unsigned char * byte_stuffing(unsigned char *packet, int *length){
     //so do data no i packet
     unsigned char *stuffed_packet = NULL;
     stuffed_packet = (unsigned char *)malloc( *length * 2);
     int j = 0;
-    for(int i = 0; i < *length; i++){
+    for(int i = 0; i < *length; i++,j++){
         if(packet[i] == FLAG){
             stuffed_packet[j] = 0x7d;
             stuffed_packet[++j] = 0x5e;
@@ -39,7 +39,6 @@ unsigned char * byte_stuffing(unsigned char *packet, int *length){
         }
         else stuffed_packet[j] = packet[i];
 
-        j++;
     //printf("data = %x, stuffed data = %x\n",  packet[i], stuffed_packet[i] );
     }
     *length = j;
@@ -53,14 +52,22 @@ unsigned char * byte_destuffing(unsigned char *packet, int *length){
     unsigned char *destuffed_packet = NULL;
     destuffed_packet = (unsigned char *)malloc(*length * 2);
     int j = 0;
+    // ALGUMA COIsA METER j++ Na CONDICAO DO FOR
     for (int i = 0; i < *length; i++) {
-        if (packet[i] == ESCAPE_OCTET)
-            destuffed_packet[j] = packet[++i] ^ 0x20;
+        if (packet[i] == ESCAPE_OCTET && packet[i+1]== 0x5e){
+             destuffed_packet[j] = 0x7e;
+             i++;
+        }
+        else if(packet[i] == ESCAPE_OCTET && packet[i+1]== 0x5d){
+            destuffed_packet[j] = 0x7d;
+             i++;
+        }
         else
             destuffed_packet[j] = packet[i];
 
         j++;
     }
+   
     *length = j;
     return destuffed_packet;
 
@@ -88,9 +95,9 @@ int su_frame_write(int fd, char a, char c) {
 }
 
 int i_frame_write(int fd, char a, int length, unsigned char *data) {
-    //bff2 before stuffing
+ /*   //bff2 before stuffing
     alarmFlag = FALSE;
-   alarmCount = 0;
+    alarmCount = 0;
     unsigned char bcc2 = data[0];
     for(int i = 1; i < length; i++){
         bcc2 ^= data[i];
@@ -149,27 +156,7 @@ int i_frame_write(int fd, char a, int length, unsigned char *data) {
         }
 
     }
-/*
-    do{
-            if( (written_length = write(fd, framed_data, frame_length)) < 0){
-                //printf("written_length  = %d\n\n\n ", written_length);
-                perror("i frame failed\n");
-            }
-            alarm( timeout);
-            flag = FALSE;
-            while(!alarmFlag && state != BCC_OK ){
-                read(fd, &buf[state], 1);
-                state_machine(buf, &state);
-            }
-            if(state == BCC_OK){
-                alarm(0);
-                break;
-            }
-            
 
-        }
-        while(alarmFlag && alarmCount <   numTransmissions);
-*/
         if(alarmCount ==  numTransmissions){
             perror("Error sending i packet, too many attempts\n");
             return -1;
@@ -178,11 +165,11 @@ int i_frame_write(int fd, char a, int length, unsigned char *data) {
             printf("RR from i message recieved\n");
         }
     return written_length;
-
+    */
 }
 
 unsigned char* read_i_frame(int fd, int *size_read){
-    unsigned char *temp = NULL;
+  /*  unsigned char *temp = NULL;
     int state = START;
     int data_size = 0;
     unsigned char buffer;
@@ -284,11 +271,12 @@ unsigned char* read_i_frame(int fd, int *size_read){
     *size_read = data_size;
     printf("data size is %d\n", data_size);
     return temp;
+    */
 }
 
 int iniciate_connection(char *port, int connection)
 {
-
+    /*
     int fd,c, res;
     struct termios oldtio,newtio;
     char buf[5];
@@ -296,10 +284,10 @@ int iniciate_connection(char *port, int connection)
    // alarmFlag = FALSE;
     int i, sum = 0, speed = 0;
 
-    /*
-    Open serial port device for reading and writing and not as controlling tty
-    because we don't want to get killed if linenoise sends CTRL-C.
-    */
+    
+    // Open serial port device for reading and writing and not as controlling tty
+    // because we don't want to get killed if linenoise sends CTRL-C.
+    
 
     fd = open(port, O_RDWR | O_NOCTTY );
 
@@ -307,7 +295,7 @@ int iniciate_connection(char *port, int connection)
 
     if ( tcgetattr(fd,&oldtio) == -1) { 
     
-/* save current port settings */
+// save current port settings 
     perror("tcgetattr");
     exit(-1);
     }
@@ -317,17 +305,17 @@ int iniciate_connection(char *port, int connection)
     newtio.c_iflag = IGNPAR;
     newtio.c_oflag = 0;
 
-    /* set input mode (non-canonical, no echo,...) */
+    // set input mode (non-canonical, no echo,...) 
 
     newtio.c_lflag = 0;
 
-    newtio.c_cc[VTIME] = 1; /* inter-character timer unused */
-    newtio.c_cc[VMIN] = 0; /* blocking read until 5 chars received */
+    newtio.c_cc[VTIME] = 1; // inter-character timer unused 
+    newtio.c_cc[VMIN] = 0; // blocking read until 5 chars received 
 
-    /*
-    VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
-    leitura do(s) próximo(s) caracter(es)
-    */
+    
+   // VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
+   // leitura do(s) próximo(s) caracter(es)
+    
 
     tcflush(fd, TCIOFLUSH);
 
@@ -378,32 +366,7 @@ int iniciate_connection(char *port, int connection)
             break;
         }
     }
-      /*  do{      	
-            if(su_frame_write(fd, A_E, C_SET) < 0)
-                perror("set message failed\n");
-            //printf("alarm do c\n");
-            //printf("%ld\n",read(fd, &buf[state], 1));
-           // printf("%d fd\n",fd);
-           // printf("%s buf\n", &buf[state]); 
-            alarm(3);
-            //pause();
-            
-            flag = FALSE;
-            while(!alarmFlag && state != BCC_OK){              
-                if(&buf[state]==NULL) break;
-                read(fd, &buf[state], 1);                        
-                state_machine(buf, &state);
-            }
-            
-            
-            if(state == BCC_OK){
-                alarm(0);
-                break;
-            }
-            
 
-        }while(alarmFlag && alarmCount < numTransmissions);
-        */
         if(alarmCount ==   numTransmissions ){
             printf("erro\n");
             perror("Error establishing connection, too many attempts\n");
@@ -430,12 +393,12 @@ int iniciate_connection(char *port, int connection)
         return -1;
     }
     return fd;
-    
+    */
 }
 
 int terminate_connection(int *fd, int connection)
 {
-    char buf[5];
+   /* char buf[5];
     alarmCount = 0;
     alarmFlag = FALSE;
     int state = START;
@@ -467,26 +430,6 @@ int terminate_connection(int *fd, int connection)
     }
         
         
-       /* do{
-            if(su_frame_write(*fd, A_E, C_DISC) < 0){
-                sleep(3);
-                perror("disc message failed\n");
-            }
-            alarm( timeout);
-            flag = FALSE;
-            while(!alarmFlag && state != BCC_OK ){
-                read(*fd, &buf[state], 1);
-                state_machine(buf, &state);
-            }
-            if(state == BCC_OK){
-                alarm(0);
-                break;
-            }
-            
-
-        }
-        while(alarmFlag && alarmCount <   numTransmissions);
-*/
         if(alarmCount ==   numTransmissions){
             perror("Error establishing connection, too many attempts\n");
             return -1;
@@ -531,7 +474,7 @@ int terminate_connection(int *fd, int connection)
     }
 
     return 1;
-
+*/
 }
 
 

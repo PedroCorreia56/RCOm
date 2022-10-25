@@ -13,7 +13,8 @@
 #define _POSIX_SOURCE 1 /* POSIX compliant source */
 
 #define FLAG 0x7e
-
+#define WRITE_SIZE 1000
+#define MAX_DATA_SIZE ((WRITE_SIZE - 6)/2)
 /*-------------------------------------------------------------------------------*/
 
 typedef struct {
